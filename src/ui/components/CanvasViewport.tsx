@@ -36,6 +36,14 @@ export const CanvasViewport: React.FC = () => {
     c: number;
   } | null>(null);
 
+  const [draggingBody, setDraggingBody] = useState<{
+    surfaceId: string;
+    startX: number;
+    startY: number;
+    initialCorners: any;
+    initialMesh?: any;
+  } | null>(null);
+
   // Initialize WebGL pipeline & media engine
   useEffect(() => {
     if (canvasRef.current && !pipelineRef.current) {
@@ -98,58 +106,80 @@ export const CanvasViewport: React.FC = () => {
     return () => cancelAnimationFrame(animId);
   }, [project, blackout, whiteout, calibrationMode, calibrationPattern]);
 
-  // Handle Mouse Dragging for Corner Pins & Mesh Warp Nodes
+  const isPointInQuad = (px: number, py: number, corners: any): boolean => {
+    const polygon = [corners.topLeft, corners.topRight, corners.bottomRight, corners.bottomLeft];
+    let inside = false;
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+      const xi = polygon[i].x, yi = polygon[i].y;
+      const xj = polygon[j].x, yj = polygon[j].y;
+      const intersect = ((yi > py) !== (yj > py)) && (px < (xj - xi) * (py - yi) / (yj - yi) + xi);
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  };
+
+  // Handle Mouse Dragging for Surfaces, Corners & Mesh Nodes
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const clickX = ((e.clientX - rect.left) / rect.width) * project.settings.resolution.width;
     const clickY = ((e.clientY - rect.top) / rect.height) * project.settings.resolution.height;
 
+    // 1. Check if clicking on active surface corner handles
     const activeSurf = project.surfaces.find(s => s.id === selectedSurfaceId);
-    if (!activeSurf || activeSurf.locked) return;
+    if (activeSurf && !activeSurf.locked) {
+      const handleRadius = 30;
+      for (const key of ["topLeft", "topRight", "bottomRight", "bottomLeft"] as const) {
+        const pt = activeSurf.corners[key];
+        const dist = Math.hypot(clickX - pt.x, clickY - pt.y);
+        if (dist <= handleRadius) {
+          setDraggingCorner({ surfaceId: activeSurf.id, cornerName: key });
+          return;
+        }
+      }
 
-    // Check corners
-    const handleRadius = 25;
-    for (const key of ["topLeft", "topRight", "bottomRight", "bottomLeft"] as const) {
-      const pt = activeSurf.corners[key];
-      const dist = Math.hypot(clickX - pt.x, clickY - pt.y);
-      if (dist <= handleRadius) {
-        setDraggingCorner({ surfaceId: activeSurf.id, cornerName: key });
-        return;
+      if (activeSurf.type === "mesh" && activeSurf.mesh) {
+        for (let r = 0; r <= activeSurf.mesh.rows; r++) {
+          for (let c = 0; c <= activeSurf.mesh.cols; c++) {
+            const pt = activeSurf.mesh.points[r][c];
+            const dist = Math.hypot(clickX - pt.x, clickY - pt.y);
+            if (dist <= handleRadius) {
+              setDraggingMeshPoint({ surfaceId: activeSurf.id, r, c });
+              return;
+            }
+          }
+        }
       }
     }
 
-    // Check mesh points
-    if (activeSurf.type === "mesh" && activeSurf.mesh) {
-      for (let r = 0; r <= activeSurf.mesh.rows; r++) {
-        for (let c = 0; c <= activeSurf.mesh.cols; c++) {
-          const pt = activeSurf.mesh.points[r][c];
-          const dist = Math.hypot(clickX - pt.x, clickY - pt.y);
-          if (dist <= handleRadius) {
-            setDraggingMeshPoint({ surfaceId: activeSurf.id, r, c });
-            return;
-          }
-        }
+    // 2. Check if clicking inside any surface polygon body for free movement & selection
+    const sortedSurfaces = [...project.surfaces].sort((a, b) => b.zIndex - a.zIndex);
+    for (const surface of sortedSurfaces) {
+      if (!surface.locked && surface.visible && isPointInQuad(clickX, clickY, surface.corners)) {
+        useLumora().selectSurface(surface.id);
+        setDraggingBody({
+          surfaceId: surface.id,
+          startX: clickX,
+          startY: clickY,
+          initialCorners: JSON.parse(JSON.stringify(surface.corners)),
+          initialMesh: surface.mesh ? JSON.parse(JSON.stringify(surface.mesh)) : undefined
+        });
+        return;
       }
     }
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!draggingCorner && !draggingMeshPoint) return;
+    if (!draggingCorner && !draggingMeshPoint && !draggingBody) return;
     const rect = e.currentTarget.getBoundingClientRect();
-    let moveX = Math.max(0, Math.min(project.settings.resolution.width, ((e.clientX - rect.left) / rect.width) * project.settings.resolution.width));
-    let moveY = Math.max(0, Math.min(project.settings.resolution.height, ((e.clientY - rect.top) / rect.height) * project.settings.resolution.height));
-
-    if (gridEnabled) {
-      moveX = Math.round(moveX / gridSize) * gridSize;
-      moveY = Math.round(moveY / gridSize) * gridSize;
-    }
+    const currentMouseX = ((e.clientX - rect.left) / rect.width) * project.settings.resolution.width;
+    const currentMouseY = ((e.clientY - rect.top) / rect.height) * project.settings.resolution.height;
 
     if (draggingCorner) {
       const activeSurf = project.surfaces.find(s => s.id === draggingCorner.surfaceId);
       if (activeSurf) {
         const newCorners = {
           ...activeSurf.corners,
-          [draggingCorner.cornerName]: { x: moveX, y: moveY }
+          [draggingCorner.cornerName]: { x: currentMouseX, y: currentMouseY }
         };
         updateSurface(activeSurf.id, { corners: newCorners });
       }
@@ -157,9 +187,35 @@ export const CanvasViewport: React.FC = () => {
       const activeSurf = project.surfaces.find(s => s.id === draggingMeshPoint.surfaceId);
       if (activeSurf && activeSurf.mesh) {
         const newPoints = activeSurf.mesh.points.map((row, rIdx) =>
-          row.map((pt, cIdx) => (rIdx === draggingMeshPoint.r && cIdx === draggingMeshPoint.c ? { x: moveX, y: moveY } : pt))
+          row.map((pt, cIdx) => (rIdx === draggingMeshPoint.r && cIdx === draggingMeshPoint.c ? { x: currentMouseX, y: currentMouseY } : pt))
         );
         updateSurface(activeSurf.id, { mesh: { ...activeSurf.mesh, points: newPoints } });
+      }
+    } else if (draggingBody) {
+      const dx = currentMouseX - draggingBody.startX;
+      const dy = currentMouseY - draggingBody.startY;
+      const activeSurf = project.surfaces.find(s => s.id === draggingBody.surfaceId);
+
+      if (activeSurf) {
+        const init = draggingBody.initialCorners;
+        const newCorners = {
+          topLeft: { x: init.topLeft.x + dx, y: init.topLeft.y + dy },
+          topRight: { x: init.topRight.x + dx, y: init.topRight.y + dy },
+          bottomRight: { x: init.bottomRight.x + dx, y: init.bottomRight.y + dy },
+          bottomLeft: { x: init.bottomLeft.x + dx, y: init.bottomLeft.y + dy }
+        };
+
+        let newMesh = undefined;
+        if (draggingBody.initialMesh) {
+          newMesh = {
+            ...draggingBody.initialMesh,
+            points: draggingBody.initialMesh.points.map((row: any[]) =>
+              row.map((pt: any) => ({ x: pt.x + dx, y: pt.y + dy }))
+            )
+          };
+        }
+
+        updateSurface(activeSurf.id, { corners: newCorners, mesh: newMesh });
       }
     }
   };
@@ -167,6 +223,7 @@ export const CanvasViewport: React.FC = () => {
   const handleMouseUp = () => {
     setDraggingCorner(null);
     setDraggingMeshPoint(null);
+    setDraggingBody(null);
   };
 
   const activeSurface = project.surfaces.find(s => s.id === selectedSurfaceId);
