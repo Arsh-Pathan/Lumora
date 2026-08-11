@@ -126,10 +126,45 @@ export class WebGLPipeline {
     ]);
     gl.bufferData(gl.ARRAY_BUFFER, quadVertices, gl.STATIC_DRAW);
 
-    // Create 1x1 dummy solid fallback texture
+    // Create 256x256 White Wireframe Grid on Black Background fallback texture
+    const gridCanvas = document.createElement("canvas");
+    gridCanvas.width = 256;
+    gridCanvas.height = 256;
+    const gctx = gridCanvas.getContext("2d")!;
+
+    // Pitch Black Background
+    gctx.fillStyle = "#000000";
+    gctx.fillRect(0, 0, 256, 256);
+
+    // Outer White Frame Border
+    gctx.strokeStyle = "#ffffff";
+    gctx.lineWidth = 6;
+    gctx.strokeRect(3, 3, 250, 250);
+
+    // Inner Sub-Grid Wireframe Lines
+    gctx.lineWidth = 2;
+    const step = 256 / 4;
+    for (let i = 1; i < 4; i++) {
+      gctx.beginPath();
+      gctx.moveTo(i * step, 0); gctx.lineTo(i * step, 256);
+      gctx.moveTo(0, i * step); gctx.lineTo(256, i * step);
+      gctx.stroke();
+    }
+
+    // Center Diagonal Crosshairs
+    gctx.lineWidth = 1.5;
+    gctx.beginPath();
+    gctx.moveTo(0, 0); gctx.lineTo(256, 256);
+    gctx.moveTo(256, 0); gctx.lineTo(0, 256);
+    gctx.stroke();
+
     this.dummyTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.dummyTexture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([79, 148, 255, 255]));
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, gridCanvas);
   }
 
   private createProgram(vsSource: string, fsSource: string): WebGLProgram | null {

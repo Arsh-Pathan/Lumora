@@ -267,54 +267,76 @@ export const CanvasViewport: React.FC = () => {
         viewBox={`0 0 ${project.settings.resolution.width} ${project.settings.resolution.height}`}
       >
         <defs>
-          {/* Minor Grid Pattern */}
+          {/* Minor Grid Pattern Aligned to (0,0) Origin */}
           <pattern
             id="lumora-minor-grid"
+            x="0"
+            y="0"
             width={gridSize}
             height={gridSize}
             patternUnits="userSpaceOnUse"
           >
             <path
-              d={`M ${gridSize} 0 L 0 0 0 ${gridSize}`}
+              d={`M ${gridSize} 0 H 0 V ${gridSize}`}
               fill="none"
-              stroke="rgba(255, 255, 255, 0.22)"
+              stroke="rgba(255, 255, 255, 0.25)"
               strokeWidth="1"
+              shapeRendering="crispEdges"
             />
           </pattern>
           {/* Major Grid Pattern (Every 4 Grid Squares) */}
           <pattern
             id="lumora-major-grid"
+            x="0"
+            y="0"
             width={gridSize * 4}
             height={gridSize * 4}
             patternUnits="userSpaceOnUse"
           >
             <rect width={gridSize * 4} height={gridSize * 4} fill="url(#lumora-minor-grid)" />
             <path
-              d={`M ${gridSize * 4} 0 L 0 0 0 ${gridSize * 4}`}
+              d={`M ${gridSize * 4} 0 H 0 V ${gridSize * 4}`}
               fill="none"
-              stroke="rgba(255, 255, 255, 0.55)"
+              stroke="rgba(255, 255, 255, 0.6)"
               strokeWidth="1.5"
+              shapeRendering="crispEdges"
             />
           </pattern>
         </defs>
 
-        {/* Snapping Grid Overlay */}
+        {/* Snapping Grid Overlay Aligned to Center & Canvas Axes */}
         {gridEnabled && (
           <g>
             <rect
+              x="0"
+              y="0"
               width={project.settings.resolution.width}
               height={project.settings.resolution.height}
               fill="url(#lumora-major-grid)"
             />
-            {/* Center Crosshairs */}
+
+            {/* Canvas Outer Border Axis */}
+            <rect
+              x="0"
+              y="0"
+              width={project.settings.resolution.width}
+              height={project.settings.resolution.height}
+              fill="none"
+              stroke="#ffffff"
+              strokeWidth="2"
+              shapeRendering="crispEdges"
+            />
+
+            {/* Center X & Y Axes */}
             <line
               x1={project.settings.resolution.width / 2}
               y1={0}
               x2={project.settings.resolution.width / 2}
               y2={project.settings.resolution.height}
               stroke="#ffffff"
-              strokeWidth="1.5"
-              strokeDasharray="4 4"
+              strokeWidth="2"
+              strokeDasharray="6 4"
+              shapeRendering="crispEdges"
             />
             <line
               x1={0}
@@ -322,19 +344,22 @@ export const CanvasViewport: React.FC = () => {
               x2={project.settings.resolution.width}
               y2={project.settings.resolution.height / 2}
               stroke="#ffffff"
-              strokeWidth="1.5"
-              strokeDasharray="4 4"
+              strokeWidth="2"
+              strokeDasharray="6 4"
+              shapeRendering="crispEdges"
             />
-            {/* Safe Area Outer Box */}
+
+            {/* Safe Area Box */}
             <rect
               x={project.settings.resolution.width * 0.05}
               y={project.settings.resolution.height * 0.05}
               width={project.settings.resolution.width * 0.9}
               height={project.settings.resolution.height * 0.9}
               fill="none"
-              stroke="rgba(255, 255, 255, 0.3)"
-              strokeWidth="1"
-              strokeDasharray="6 6"
+              stroke="rgba(255, 255, 255, 0.4)"
+              strokeWidth="1.5"
+              strokeDasharray="8 6"
+              shapeRendering="crispEdges"
             />
           </g>
         )}

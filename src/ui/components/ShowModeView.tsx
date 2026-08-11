@@ -1,10 +1,11 @@
 /**
- * LUMORA UI — Dedicated Live Performance Show Mode View
+ * LUMORA UI — Premium Google Material 3 Dark Monochrome Live Show Mode
  */
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useLumora } from "../context/LumoraContext";
-import { ShieldAlert, ChevronLeft, ChevronRight, Eye, Monitor } from "lucide-react";
+import { LumoraLogo } from "./LumoraLogo";
+import { ShieldAlert, ChevronLeft, ChevronRight, Eye, Activity, Clock } from "lucide-react";
 
 export const ShowModeView: React.FC = () => {
   const {
@@ -14,10 +15,24 @@ export const ShowModeView: React.FC = () => {
     toggleBlackout,
     toggleWhiteout,
     toggleShowMode,
-    triggerScene
+    triggerScene,
+    fps,
+    frameTimeMs
   } = useLumora();
 
-  // Keyboard Navigation for Show Mode
+  const [timeString, setTimeString] = useState("");
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setTimeString(now.toLocaleTimeString());
+    };
+    updateTime();
+    const timer = setInterval(updateTime, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Keyboard Navigation for Live Show Mode
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "1" && project.scenes[0]) triggerScene(project.scenes[0].id);
@@ -45,23 +60,65 @@ export const ShowModeView: React.FC = () => {
     <div style={{
       position: "fixed",
       inset: 0,
-      backgroundColor: "#030306",
-      zIndex: 900,
+      backgroundColor: "#000000",
+      zIndex: 990,
       display: "flex",
       flexDirection: "column",
       padding: 24,
       color: "#ffffff"
     }}>
-      {/* Show Mode Top Status Bar */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, fontWeight: 800, fontSize: 20, letterSpacing: "0.08em", color: "var(--accent-blue)" }}>
-          <Monitor size={28} />
-          LUMORA SHOW MODE
+      {/* Show Mode Top Bar */}
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingBottom: 20,
+        borderBottom: "1px solid var(--border-subtle)",
+        marginBottom: 24
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <LumoraLogo size={28} showText={true} />
+          <span style={{
+            fontSize: 11,
+            fontWeight: 800,
+            letterSpacing: "0.12em",
+            backgroundColor: "#ffffff",
+            color: "#000000",
+            padding: "3px 8px",
+            borderRadius: 4
+          }}>
+            LIVE SHOW CONTROL
+          </span>
         </div>
 
-        <button className="btn btn-sm" onClick={toggleShowMode} style={{ fontSize: 13, padding: "8px 16px" }}>
-          Exit Show Mode (Tab)
-        </button>
+        {/* Live Clock & FPS Performance */}
+        <div style={{ display: "flex", alignItems: "center", gap: 20, fontSize: 13, fontFamily: "var(--font-mono)", color: "var(--text-secondary)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <Clock size={16} />
+            {timeString}
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <Activity size={16} />
+            {fps} FPS ({frameTimeMs}ms)
+          </div>
+
+          <button
+            onClick={toggleShowMode}
+            style={{
+              backgroundColor: "var(--bg-surface)",
+              color: "#ffffff",
+              border: "1px solid var(--border-subtle)",
+              borderRadius: "20px",
+              padding: "8px 18px",
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: "pointer"
+            }}
+          >
+            Exit Show Mode (Tab)
+          </button>
+        </div>
       </div>
 
       {/* Emergency Overrides (Huge Touch Buttons) */}
@@ -70,34 +127,36 @@ export const ShowModeView: React.FC = () => {
           onClick={toggleBlackout}
           style={{
             height: 90,
-            backgroundColor: blackout ? "var(--accent-red)" : "hsl(355, 60%, 15%)",
-            color: "#ffffff",
-            border: `2px solid ${blackout ? "#ffffff" : "var(--accent-red)"}`,
+            backgroundColor: blackout ? "#ffffff" : "var(--bg-surface)",
+            color: blackout ? "#000000" : "#ffffff",
+            border: `2px solid ${blackout ? "#ffffff" : "var(--border-subtle)"}`,
             borderRadius: 12,
-            fontSize: 24,
+            fontSize: 22,
             fontWeight: 900,
+            letterSpacing: "0.06em",
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             gap: 12,
-            boxShadow: blackout ? "0 0 30px rgba(239, 68, 68, 0.8)" : "none"
+            boxShadow: blackout ? "0 0 30px rgba(255, 255, 255, 0.4)" : "none"
           }}
         >
           <ShieldAlert size={32} />
-          {blackout ? "BLACKOUT ACTIVE (CLICK TO RESTORE)" : "EMERGENCY BLACKOUT (B)"}
+          {blackout ? "🚨 BLACKOUT ON (CLICK TO RESTORE)" : "EMERGENCY BLACKOUT (B)"}
         </button>
 
         <button
           onClick={toggleWhiteout}
           style={{
             height: 90,
-            backgroundColor: whiteout ? "#ffffff" : "hsl(230, 20%, 15%)",
+            backgroundColor: whiteout ? "#ffffff" : "var(--bg-surface)",
             color: whiteout ? "#000000" : "#ffffff",
-            border: "2px solid var(--border-color)",
+            border: `2px solid ${whiteout ? "#ffffff" : "var(--border-subtle)"}`,
             borderRadius: 12,
-            fontSize: 24,
+            fontSize: 22,
             fontWeight: 900,
+            letterSpacing: "0.06em",
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
@@ -106,30 +165,32 @@ export const ShowModeView: React.FC = () => {
           }}
         >
           <Eye size={32} />
-          WHITEOUT TEST (W)
+          WHITEOUT GRID TEST (W)
         </button>
       </div>
 
-      {/* Main Active Scene Indicator */}
+      {/* Active Scene Cue Banner */}
       <div style={{
         background: "var(--bg-panel)",
-        border: "1px solid var(--accent-blue)",
+        border: "1px solid #ffffff",
         borderRadius: 12,
-        padding: 24,
+        padding: "24px 32px",
         textAlign: "center",
         marginBottom: 24
       }}>
-        <div style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 700, letterSpacing: "0.1em" }}>ACTIVE SCENE CUE</div>
-        <div style={{ fontSize: 42, fontWeight: 900, color: "var(--accent-blue)", margin: "8px 0" }}>
+        <div style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 800, letterSpacing: "0.15em", textTransform: "uppercase" }}>
+          CURRENT STAGE CUE
+        </div>
+        <div style={{ fontSize: 44, fontWeight: 900, color: "#ffffff", letterSpacing: "0.05em", margin: "8px 0" }}>
           {activeScene ? activeScene.name : "NO ACTIVE SCENE"}
         </div>
-        <div style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+        <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>
           Transition: {activeScene?.transition.toUpperCase()} ({activeScene?.transitionDurationMs}ms)
         </div>
       </div>
 
-      {/* Scene Grid Buttons (1, 2, 3, 4) */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, marginBottom: 24 }}>
+      {/* Numbered Scene Trigger Tiles */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, marginBottom: 24 }}>
         {project.scenes.map((sc, idx) => {
           const isActive = sc.id === project.activeSceneId;
           return (
@@ -137,46 +198,47 @@ export const ShowModeView: React.FC = () => {
               key={sc.id}
               onClick={() => triggerScene(sc.id)}
               style={{
-                height: 100,
-                backgroundColor: isActive ? "hsl(215, 80%, 25%)" : "var(--bg-panel)",
-                color: "#ffffff",
-                border: `2px solid ${isActive ? "var(--accent-blue)" : "var(--border-color)"}`,
+                height: 110,
+                backgroundColor: isActive ? "#ffffff" : "var(--bg-surface)",
+                color: isActive ? "#000000" : "#ffffff",
+                border: `2px solid ${isActive ? "#ffffff" : "var(--border-subtle)"}`,
                 borderRadius: 12,
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: 800,
                 cursor: "pointer",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 6
+                gap: 6,
+                boxShadow: isActive ? "0 4px 16px rgba(255,255,255,0.3)" : "none"
               }}
             >
-              <span style={{ fontSize: 12, color: "var(--text-muted)" }}>SCENE {idx + 1} ({idx + 1})</span>
+              <span style={{ fontSize: 11, fontWeight: 800, opacity: 0.8 }}>CUE {idx + 1} (Key: {idx + 1})</span>
               {sc.name}
             </button>
           );
         })}
       </div>
 
-      {/* Prev / Next Navigation Controls */}
+      {/* Previous / Next Navigation Controls */}
       <div style={{ display: "flex", gap: 16, marginTop: "auto" }}>
         <button
           className="btn"
-          style={{ flex: 1, height: 60, fontSize: 18, fontWeight: 700, justifyContent: "center" }}
+          style={{ flex: 1, height: 60, fontSize: 18, fontWeight: 800, justifyContent: "center", borderRadius: "12px" }}
           disabled={currentIdx <= 0}
           onClick={() => currentIdx > 0 && triggerScene(project.scenes[currentIdx - 1].id)}
         >
-          <ChevronLeft size={24} /> PREVIOUS SCENE (Left)
+          <ChevronLeft size={24} /> PREVIOUS CUE (Left Arrow)
         </button>
 
         <button
           className="btn"
-          style={{ flex: 1, height: 60, fontSize: 18, fontWeight: 700, justifyContent: "center" }}
+          style={{ flex: 1, height: 60, fontSize: 18, fontWeight: 800, justifyContent: "center", borderRadius: "12px" }}
           disabled={currentIdx >= project.scenes.length - 1}
           onClick={() => currentIdx < project.scenes.length - 1 && triggerScene(project.scenes[currentIdx + 1].id)}
         >
-          NEXT SCENE (Right) <ChevronRight size={24} />
+          NEXT CUE (Right Arrow) <ChevronRight size={24} />
         </button>
       </div>
     </div>
