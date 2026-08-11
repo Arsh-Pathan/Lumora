@@ -1,40 +1,34 @@
 /* ==========================================================================
-   LUMORA — Dark Creative Desktop UI Design System
+   LUMORA — Ultra-Sleek High-Contrast Black & White Monochrome Design System
    ========================================================================== */
 
 :root {
-  /* Color Palette - HSL Derived Dark Workspace */
-  --bg-darkest: hsl(230, 25%, 4%);
-  --bg-darker: hsl(230, 20%, 7%);
-  --bg-panel: hsl(230, 18%, 10%);
-  --bg-panel-hover: hsl(230, 16%, 13%);
-  --bg-input: hsl(230, 15%, 12%);
+  /* High-Contrast Monochrome Palette */
+  --bg-darkest: #000000;
+  --bg-darker: #080808;
+  --bg-panel: #101010;
+  --bg-panel-hover: #1a1a1a;
+  --bg-input: #141414;
 
-  /* Accent & Status Colors */
-  --accent-blue: hsl(215, 100%, 62%);
-  --accent-blue-hover: hsl(215, 100%, 70%);
-  --accent-green: hsl(150, 85%, 42%);
-  --accent-red: hsl(355, 90%, 55%);
-  --accent-yellow: hsl(45, 95%, 55%);
+  /* Contrast Accents */
+  --accent-white: #ffffff;
+  --accent-grey: #888888;
+  --accent-border: #282828;
+  --accent-border-bright: #444444;
 
-  /* Text Colors */
-  --text-primary: hsl(0, 0%, 96%);
-  --text-secondary: hsl(230, 10%, 70%);
-  --text-muted: hsl(230, 8%, 48%);
-  --text-inverse: hsl(0, 0%, 5%);
-
-  /* Borders & Dividers */
-  --border-color: hsl(230, 15%, 16%);
-  --border-light: hsl(230, 12%, 22%);
+  /* Text Hierarchy */
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --text-muted: #777777;
+  --text-inverse: #000000;
 
   /* Typography */
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Inter", sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
 
-  /* Spacing */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
+  /* Geometry & Borders */
+  --radius-sm: 2px;
+  --radius-md: 4px;
 }
 
 * {
@@ -48,7 +42,7 @@
 body {
   background-color: var(--bg-darkest);
   color: var(--text-primary);
-  font-family: var(--font-family);
+  font-family: var(--font-sans);
   font-size: 13px;
   line-height: 1.4;
   overflow: hidden;
@@ -56,23 +50,23 @@ body {
   width: 100vw;
 }
 
-/* Custom Scrollbars */
+/* Custom Sleek Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-darker);
+  background: var(--bg-darkest);
 }
 ::-webkit-scrollbar-thumb {
-  background: hsl(230, 12%, 25%);
-  border-radius: 3px;
+  background: #2a2a2a;
+  border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(230, 12%, 35%);
+  background: #444444;
 }
 
-/* Main Workspace Grid Container */
+/* App Main Container (Full-bleed 100vw x 100vh) */
 .lumora-app {
   display: flex;
   flex-direction: column;
@@ -84,13 +78,14 @@ body {
 .lumora-main-row {
   display: flex;
   flex: 1;
+  width: 100vw;
   overflow: hidden;
 }
 
-/* Side Panels */
+/* Panels */
 .lumora-panel {
   background-color: var(--bg-panel);
-  border-right: 1px solid var(--border-color);
+  border-right: 1px solid var(--accent-border);
   display: flex;
   flex-direction: column;
   z-index: 10;
@@ -98,20 +93,20 @@ body {
 
 .lumora-panel-right {
   border-right: none;
-  border-left: 1px solid var(--border-color);
+  border-left: 1px solid var(--accent-border);
 }
 
 .lumora-panel-header {
   height: 36px;
   padding: 0 12px;
   background: var(--bg-darker);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--accent-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 11px;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-secondary);
 }
@@ -119,18 +114,18 @@ body {
 .lumora-panel-body {
   flex: 1;
   overflow-y: auto;
-  padding: 8px;
+  padding: 10px;
 }
 
 /* Buttons */
 .btn {
   background-color: var(--bg-input);
   color: var(--text-primary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--accent-border);
   border-radius: var(--radius-sm);
   padding: 6px 12px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -140,102 +135,119 @@ body {
 
 .btn:hover {
   background-color: var(--bg-panel-hover);
-  border-color: var(--border-light);
+  border-color: var(--accent-border-bright);
 }
 
 .btn-primary {
-  background-color: var(--accent-blue);
+  background-color: var(--accent-white);
   color: var(--text-inverse);
-  border-color: var(--accent-blue);
+  border-color: var(--accent-white);
+  font-weight: 700;
 }
 
 .btn-primary:hover {
-  background-color: var(--accent-blue-hover);
+  background-color: #e0e0e0;
+  border-color: #e0e0e0;
 }
 
 .btn-danger {
-  background-color: var(--accent-red);
-  color: #fff;
-  border-color: var(--accent-red);
+  background-color: #ffffff;
+  color: #000000;
+  border: 2px solid #ffffff;
+  font-weight: 800;
 }
 
 .btn-danger:hover {
-  opacity: 0.9;
+  background-color: #e2e2e2;
 }
 
 .btn-sm {
-  padding: 4px 8px;
+  padding: 4px 10px;
   font-size: 11px;
 }
 
-/* Input Controls */
+/* Input Fields */
 .input-field {
   background-color: var(--bg-input);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--accent-border);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
-  padding: 5px 8px;
+  padding: 6px 8px;
   font-size: 12px;
   outline: none;
   width: 100%;
+  transition: border-color 0.15s ease;
 }
 
 .input-field:focus {
-  border-color: var(--accent-blue);
+  border-color: var(--accent-white);
 }
 
-/* Tab Headers */
+/* Tab List */
 .tab-list {
   display: flex;
   background: var(--bg-darker);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--accent-border);
 }
 
 .tab-item {
-  padding: 8px 12px;
+  padding: 10px 14px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-muted);
   cursor: pointer;
   border-bottom: 2px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.tab-item:hover {
+  color: var(--text-secondary);
 }
 
 .tab-item.active {
-  color: var(--text-primary);
-  border-bottom-color: var(--accent-blue);
+  color: var(--accent-white);
+  border-bottom-color: var(--accent-white);
   background: var(--bg-panel);
 }
 
-/* Lists */
+/* List Items */
 .list-item {
-  padding: 8px;
+  padding: 8px 10px;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
+  background: var(--bg-input);
+  border: 1px solid var(--accent-border);
+  transition: all 0.12s ease;
 }
 
 .list-item:hover {
   background: var(--bg-panel-hover);
+  border-color: var(--accent-border-bright);
 }
 
 .list-item.selected {
-  background: hsl(215, 50%, 18%);
-  border: 1px solid var(--accent-blue);
+  background: #1e1e1e;
+  border: 1px solid var(--accent-white);
+  color: var(--accent-white);
 }
 
-/* Canvas Viewport */
+/* Canvas Container */
 .canvas-container {
   flex: 1;
   position: relative;
-  background-color: #030306;
+  background-color: #000000;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 /* Blackout Overlay */
@@ -247,9 +259,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--accent-red);
-  font-size: 32px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  border: 4px solid #ffffff;
   pointer-events: none;
 }

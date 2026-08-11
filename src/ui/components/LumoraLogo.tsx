@@ -1,0 +1,67 @@
+/**
+ * LUMORA — Precision High-Contrast Monochrome Vector SVG Logo Component
+ */
+
+import React from "react";
+
+export interface LumoraLogoProps {
+  size?: number;
+  showText?: boolean;
+}
+
+export const LumoraLogo: React.FC<LumoraLogoProps> = ({ size = 24, showText = true }) => {
+  return (
+    <div style={{ display: "inline-flex", alignItems: "center", gap: 10, userSelect: "none" }}>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 100 100"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        {/* Outer Perspective Quad Matrix Boundary */}
+        <polygon
+          points="15,20 85,10 95,85 10,90"
+          stroke="#ffffff"
+          strokeWidth="3.5"
+          strokeLinejoin="round"
+        />
+
+        {/* 4 Corner Pin Target Nodes */}
+        <circle cx="15" cy="20" r="4.5" fill="#ffffff" />
+        <circle cx="85" cy="10" r="4.5" fill="#ffffff" />
+        <circle cx="95" cy="85" r="4.5" fill="#ffffff" />
+        <circle cx="10" cy="90" r="4.5" fill="#ffffff" />
+
+        {/* Perspective Grid Division Lines */}
+        <line x1="15" y1="20" x2="95" y2="85" stroke="#ffffff" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.6" />
+        <line x1="85" y1="10" x2="10" y2="90" stroke="#ffffff" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.6" />
+
+        {/* Central Precision Optical Lens & Projection Aperture */}
+        <circle cx="50" cy="50" r="18" stroke="#ffffff" strokeWidth="3" fill="#000000" />
+        <circle cx="50" cy="50" r="10" fill="#ffffff" />
+        <circle cx="50" cy="50" r="4" fill="#000000" />
+
+        {/* Light Beam Ray Accents */}
+        <line x1="50" y1="18" x2="50" y2="30" stroke="#ffffff" strokeWidth="2.5" />
+        <line x1="50" y1="70" x2="50" y2="82" stroke="#ffffff" strokeWidth="2.5" />
+        <line x1="18" y1="50" x2="30" y2="50" stroke="#ffffff" strokeWidth="2.5" />
+        <line x1="70" y1="50" x2="82" y2="50" stroke="#ffffff" strokeWidth="2.5" />
+      </svg>
+
+      {showText && (
+        <span
+          style={{
+            fontWeight: 900,
+            fontSize: size * 0.7,
+            letterSpacing: "0.12em",
+            color: "#ffffff",
+            fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif"
+          }}
+        >
+          LUMORA
+        </span>
+      )}
+    </div>
+  );
+};

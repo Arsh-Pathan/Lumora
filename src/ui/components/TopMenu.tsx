@@ -4,7 +4,8 @@
 
 import React from "react";
 import { useLumora } from "../context/LumoraContext";
-import { Play, Eye, ShieldAlert, Monitor, Sliders, Activity } from "lucide-react";
+import { LumoraLogo } from "./LumoraLogo";
+import { Play, Eye, ShieldAlert, Sliders, Activity } from "lucide-react";
 
 export const TopMenu: React.FC = () => {
   const {
@@ -43,24 +44,21 @@ export const TopMenu: React.FC = () => {
 
   return (
     <div style={{
-      height: 38,
+      height: 42,
       backgroundColor: "var(--bg-darker)",
-      borderBottom: "1px solid var(--border-color)",
+      borderBottom: "1px solid var(--accent-border)",
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
-      padding: "0 12px",
+      padding: "0 14px",
       fontSize: 12,
       fontWeight: 500
     }}>
-      {/* Brand & File Menus */}
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, letterSpacing: "0.08em", color: "var(--accent-blue)" }}>
-          <Monitor size={18} />
-          LUMORA
-        </div>
+      {/* Brand Logo & Menus */}
+      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+        <LumoraLogo size={22} showText={true} />
 
-        <div style={{ display: "flex", gap: 12, color: "var(--text-secondary)" }}>
+        <div style={{ display: "flex", gap: 14, color: "var(--text-secondary)", fontWeight: 600, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>
           <span style={{ cursor: "pointer" }} onClick={() => setNewProjectModalOpen(true)}>File</span>
           <span style={{ cursor: "pointer" }} onClick={handleSave}>Save .lumora</span>
           <span style={{ cursor: "pointer" }} onClick={() => setVerifyShowModalOpen(true)}>Verify Show</span>
@@ -70,28 +68,29 @@ export const TopMenu: React.FC = () => {
         </div>
       </div>
 
-      {/* Center Status Pill */}
+      {/* Center Status Badge */}
       <div
         onClick={() => setVerifyShowModalOpen(true)}
         style={{
           cursor: "pointer",
-          padding: "3px 10px",
-          borderRadius: 12,
-          fontSize: 11,
-          fontWeight: 700,
-          backgroundColor: report.isReady ? "rgba(34, 197, 94, 0.15)" : "rgba(239, 68, 68, 0.15)",
-          color: report.isReady ? "var(--accent-green)" : "var(--accent-red)",
-          border: `1px solid ${report.isReady ? "var(--accent-green)" : "var(--accent-red)"}`
+          padding: "3px 12px",
+          borderRadius: 2,
+          fontSize: 10,
+          fontWeight: 800,
+          letterSpacing: "0.08em",
+          backgroundColor: report.isReady ? "#ffffff" : "#1a1a1a",
+          color: report.isReady ? "#000000" : "#ffffff",
+          border: `1px solid ${report.isReady ? "#ffffff" : "#444444"}`
         }}
       >
         {report.statusText}
       </div>
 
-      {/* Right Controls & Emergency Actions */}
+      {/* Right Controls & Emergency Overrides */}
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         {/* Simple vs Advanced Mode */}
         <button className="btn btn-sm" onClick={toggleSimpleMode}>
-          <Sliders size={14} />
+          <Sliders size={13} />
           {isSimpleMode ? "Simple Mode" : "Advanced Mode"}
         </button>
 
@@ -100,7 +99,7 @@ export const TopMenu: React.FC = () => {
           className={`btn btn-sm ${showMode ? "btn-primary" : ""}`}
           onClick={toggleShowMode}
         >
-          <Play size={14} />
+          <Play size={13} />
           {showMode ? "Exit Show Mode" : "Show Mode"}
         </button>
 
@@ -108,9 +107,9 @@ export const TopMenu: React.FC = () => {
         <button
           className="btn btn-sm"
           onClick={toggleWhiteout}
-          style={{ backgroundColor: whiteout ? "#ffffff" : undefined, color: whiteout ? "#000" : undefined }}
+          style={{ backgroundColor: whiteout ? "#ffffff" : undefined, color: whiteout ? "#000000" : undefined }}
         >
-          <Eye size={14} />
+          <Eye size={13} />
           WHITEOUT
         </button>
 
@@ -118,18 +117,14 @@ export const TopMenu: React.FC = () => {
         <button
           className="btn btn-danger btn-sm"
           onClick={toggleBlackout}
-          style={{
-            fontWeight: 700,
-            boxShadow: blackout ? "0 0 12px rgba(239, 68, 68, 0.8)" : "none"
-          }}
         >
-          <ShieldAlert size={14} />
+          <ShieldAlert size={13} />
           {blackout ? "BLACKOUT ON" : "BLACKOUT"}
         </button>
 
         {/* Performance Metric Badge */}
         <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
-          <Activity size={13} color="var(--accent-green)" />
+          <Activity size={13} color="#ffffff" />
           {fps} FPS ({frameTimeMs}ms)
         </div>
       </div>
