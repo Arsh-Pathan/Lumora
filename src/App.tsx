@@ -17,11 +17,17 @@ import { CalibrationDialog } from "./ui/components/CalibrationDialog";
 import { NewProjectModal } from "./ui/components/NewProjectModal";
 import { SettingsDialog } from "./ui/components/SettingsDialog";
 import { TutorialModal } from "./ui/components/TutorialModal";
+import { ProjectorWindow } from "./ui/components/ProjectorWindow";
 import "./ui/styles/lumora-theme.css";
 
 const MainLayout: React.FC = () => {
   const { showMode, isSimpleMode } = useLumora();
   const [leftTab, setLeftTab] = useState<"surfaces" | "media" | "scenes">("surfaces");
+
+  const isProjectorRoute = window.location.hash.includes("projector");
+  if (isProjectorRoute) {
+    return <ProjectorWindow />;
+  }
 
   if (showMode) {
     return <ShowModeView />;
