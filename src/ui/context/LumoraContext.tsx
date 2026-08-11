@@ -9,7 +9,6 @@ import type { VerificationReport } from "../../project/ProjectValidator";
 import { LumoraArchive } from "../../project/LumoraArchive";
 import { ProjectValidator } from "../../project/ProjectValidator";
 import { SurfaceManager } from "../../surfaces/SurfaceManager";
-import { SampleAssets } from "../../media/SampleAssets";
 
 export type ToolMode = "select" | "quad-pin" | "mesh" | "move" | "pan";
 
@@ -146,49 +145,22 @@ const LumoraContext = createContext<LumoraContextType | null>(null);
 
 export const LumoraProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [project, setProject] = useState<ProjectData>(() => {
-    // Populate with 2 default surfaces & sample media for immediate workflow usability
     const p = { ...defaultProject };
-    const surf1 = SurfaceManager.createSurface("Stage Center Quad", "quad", 1920, 1080);
-    const surf2 = SurfaceManager.createSurface("Right Column Mesh", "mesh", 1920, 1080);
-
-    // Reposition for a nice default composition
-    surf1.corners = {
+    const defaultQuad = SurfaceManager.createSurface("Stage Quad 1", "quad", 1920, 1080);
+    defaultQuad.corners = {
       topLeft: { x: 300, y: 200 },
       topRight: { x: 1100, y: 180 },
       bottomRight: { x: 1050, y: 800 },
       bottomLeft: { x: 320, y: 820 }
     };
-    surf1.mediaId = "sample-neon-cyber";
+    defaultQuad.mediaId = null;
 
-    surf2.corners = {
-      topLeft: { x: 1200, y: 200 },
-      topRight: { x: 1650, y: 220 },
-      bottomRight: { x: 1620, y: 780 },
-      bottomLeft: { x: 1180, y: 800 }
-    };
-    surf2.mediaId = "sample-laser-tunnel";
-
-    p.surfaces = [surf1, surf2];
-
-    p.mediaAssets = SampleAssets.getSampleItems().map(item => ({
-      id: item.id,
-      filename: item.name,
-      originalPath: item.url,
-      mimeType: item.type === "video" ? "video/mp4" : "image/png",
-      mediaType: item.type,
-      resolution: item.resolution,
-      duration: item.duration,
-      fps: 60,
-      fileSize: 1024000,
-      checksum: LumoraArchive.generateSimpleChecksum(item.name, 1024000),
-      isEmbedded: false,
-      status: "ready"
-    }));
-
+    p.surfaces = [defaultQuad];
+    p.mediaAssets = [];
     return p;
   });
 
-  const [selectedSurfaceId, setSelectedSurfaceId] = useState<string | null>("surface_default_1");
+  const [selectedSurfaceId, setSelectedSurfaceId] = useState<string | null>(null);
   const [activeTool, setActiveTool] = useState<ToolMode>("quad-pin");
   const [isSimpleMode, setIsSimpleMode] = useState<boolean>(false);
 
@@ -273,6 +245,9 @@ export const LumoraProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, []);
 
   const createNewProject = (name: string, width: number, height: number, fps: number) => {
+    const defaultQuad = SurfaceManager.createSurface("Stage Quad 1", "quad", width, height);
+    defaultQuad.mediaId = null;
+
     const newP: ProjectData = {
       manifest: {
         format: "LUMORA",
@@ -291,27 +266,14 @@ export const LumoraProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         backgroundColor: "#05050a",
         autosaveIntervalMinutes: 2
       },
-      surfaces: [],
+      surfaces: [defaultQuad],
       scenes: [{ id: "sc-1", name: "INTRO", surfaceStates: {}, transition: "fade", transitionDurationMs: 500 }],
       activeSceneId: "sc-1",
-      mediaAssets: SampleAssets.getSampleItems().map(item => ({
-        id: item.id,
-        filename: item.name,
-        originalPath: item.url,
-        mimeType: item.type === "video" ? "video/mp4" : "image/png",
-        mediaType: item.type,
-        resolution: item.resolution,
-        duration: item.duration,
-        fps,
-        fileSize: 1024000,
-        checksum: LumoraArchive.generateSimpleChecksum(item.name, 1024000),
-        isEmbedded: false,
-        status: "ready"
-      }))
+      mediaAssets: []
     };
 
     pushHistory(newP);
-    setSelectedSurfaceId(null);
+    setSelectedSurfaceId(defaultQuad.id);
   };
 
   const loadProjectData = (data: ProjectData) => {

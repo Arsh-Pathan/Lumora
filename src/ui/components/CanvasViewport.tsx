@@ -198,7 +198,7 @@ export const CanvasViewport: React.FC = () => {
         </div>
       )}
 
-      {/* Interactive Canvas Overlay Handles (SVG) */}
+      {/* Interactive Canvas Overlay Handles & Grid (SVG) */}
       <svg
         style={{
           position: "absolute",
@@ -209,6 +209,78 @@ export const CanvasViewport: React.FC = () => {
         }}
         viewBox={`0 0 ${project.settings.resolution.width} ${project.settings.resolution.height}`}
       >
+        <defs>
+          {/* Minor Grid Pattern */}
+          <pattern
+            id="lumora-minor-grid"
+            width={gridSize}
+            height={gridSize}
+            patternUnits="userSpaceOnUse"
+          >
+            <path
+              d={`M ${gridSize} 0 L 0 0 0 ${gridSize}`}
+              fill="none"
+              stroke="rgba(255, 255, 255, 0.22)"
+              strokeWidth="1"
+            />
+          </pattern>
+          {/* Major Grid Pattern (Every 4 Grid Squares) */}
+          <pattern
+            id="lumora-major-grid"
+            width={gridSize * 4}
+            height={gridSize * 4}
+            patternUnits="userSpaceOnUse"
+          >
+            <rect width={gridSize * 4} height={gridSize * 4} fill="url(#lumora-minor-grid)" />
+            <path
+              d={`M ${gridSize * 4} 0 L 0 0 0 ${gridSize * 4}`}
+              fill="none"
+              stroke="rgba(255, 255, 255, 0.55)"
+              strokeWidth="1.5"
+            />
+          </pattern>
+        </defs>
+
+        {/* Snapping Grid Overlay */}
+        {gridEnabled && (
+          <g>
+            <rect
+              width={project.settings.resolution.width}
+              height={project.settings.resolution.height}
+              fill="url(#lumora-major-grid)"
+            />
+            {/* Center Crosshairs */}
+            <line
+              x1={project.settings.resolution.width / 2}
+              y1={0}
+              x2={project.settings.resolution.width / 2}
+              y2={project.settings.resolution.height}
+              stroke="#ffffff"
+              strokeWidth="1.5"
+              strokeDasharray="4 4"
+            />
+            <line
+              x1={0}
+              y1={project.settings.resolution.height / 2}
+              x2={project.settings.resolution.width}
+              y2={project.settings.resolution.height / 2}
+              stroke="#ffffff"
+              strokeWidth="1.5"
+              strokeDasharray="4 4"
+            />
+            {/* Safe Area Outer Box */}
+            <rect
+              x={project.settings.resolution.width * 0.05}
+              y={project.settings.resolution.height * 0.05}
+              width={project.settings.resolution.width * 0.9}
+              height={project.settings.resolution.height * 0.9}
+              fill="none"
+              stroke="rgba(255, 255, 255, 0.3)"
+              strokeWidth="1"
+              strokeDasharray="6 6"
+            />
+          </g>
+        )}
         {/* Draw interactive handles for selected surface */}
         {activeSurface && !activeSurface.locked && (
           <g>
