@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { LumoraArchive } from "../project/LumoraArchive";
 import type { ProjectData } from "../project/LumoraArchive";
+import { zipSync, strToU8 } from "fflate";
 
 describe("Native .lumora Project Container Engine", () => {
   it("should serialize and deserialize a .lumora package round-trip correctly", async () => {
@@ -77,12 +78,10 @@ describe("Native .lumora Project Container Engine", () => {
       ]
     };
 
-    // Export to zip buffer
     const packageBuffer = await LumoraArchive.exportLumoraPackage(originalProject);
     expect(packageBuffer).toBeInstanceOf(Uint8Array);
     expect(packageBuffer.byteLength).toBeGreaterThan(100);
 
-    // Import back from zip buffer
     const restored = await LumoraArchive.importLumoraPackage(packageBuffer);
 
     expect(restored.manifest.projectName).toBe("Festival Stage Mapping");
@@ -90,5 +89,21 @@ describe("Native .lumora Project Container Engine", () => {
     expect(restored.surfaces[0].name).toBe("Main Arch Quad");
     expect(restored.scenes.length).toBe(1);
     expect(restored.mediaAssets.length).toBe(1);
+  });
+
+  it("should throw error when importing zip without manifest.json", async () => {
+    const invalidZip = zipSync({
+      "project/settings.json": strToU8("{}")
+    });
+
+    await expect(LumoraArchive.importLumoraPackage(invalidZip)).rejects.toThrow("Missing manifest.json");
+  });
+
+  it("should throw error when container format is not LUMORA", async () => {
+    const wrongFormatZip = zipSync({
+      "manifest.json": strToU8(JSON.stringify({ format: "SOME_OTHER_FORMAT" }))
+    });
+
+    await expect(LumoraArchive.importLumoraPackage(wrongFormatZip)).rejects.toThrow("Container format is not LUMORA");
   });
 });
