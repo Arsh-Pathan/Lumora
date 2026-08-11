@@ -61,6 +61,7 @@ export class WebGLPipeline {
 
   // Buffers & Textures
   private quadVBO: WebGLBuffer | null = null;
+  private meshVBOCache: Map<string, WebGLBuffer> = new Map();
   private dummyTexture: WebGLTexture | null = null;
   private textureCache: Map<string, WebGLTexture> = new Map();
 
@@ -91,6 +92,18 @@ export class WebGLPipeline {
     }
 
     const gl = this.gl;
+
+    // Handle context loss & restoration
+    this.canvas.addEventListener("webglcontextlost", (e) => {
+      e.preventDefault();
+      console.warn("LUMORA WebGLPipeline: WebGL context lost!");
+    }, false);
+
+    this.canvas.addEventListener("webglcontextrestored", () => {
+      console.log("LUMORA WebGLPipeline: WebGL context restored! Rebuilding GPU pipeline...");
+      this.initGL();
+    }, false);
+
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
@@ -177,6 +190,25 @@ export class WebGLPipeline {
     }
 
     return tex;
+  }
+
+  public disposeTexture(id: string) {
+    if (!this.gl) return;
+    const tex = this.textureCache.get(id);
+    if (tex) {
+      this.gl.deleteTexture(tex);
+      this.textureCache.delete(id);
+    }
+  }
+
+  public purgeUnusedTextures(activeIds: Set<string>) {
+    if (!this.gl) return;
+    for (const [id, tex] of this.textureCache.entries()) {
+      if (!activeIds.has(id)) {
+        this.gl.deleteTexture(tex);
+        this.textureCache.delete(id);
+      }
+    }
   }
 
   public render(state: PipelineRenderState) {
@@ -302,8 +334,14 @@ export class WebGLPipeline {
 
     const { vertices, indexCount } = buildMeshVertexBuffers(surface.mesh!);
 
-    const tempVBO = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, tempVBO);
+    // Reuse persistent mesh VBO to prevent GC stutter & memory allocation inside render loop
+    let meshVBO = this.meshVBOCache.get(surface.id);
+    if (!meshVBO) {
+      meshVBO = gl.createBuffer()!;
+      this.meshVBOCache.set(surface.id, meshVBO);
+    }
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, meshVBO);
     gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
 
     gl.uniformMatrix3fv(gl.getUniformLocation(prog, "u_projection"), false, projMat);
@@ -327,7 +365,6 @@ export class WebGLPipeline {
     gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 16, 8);
 
     gl.drawArrays(gl.TRIANGLES, 0, indexCount);
-    gl.deleteBuffer(tempVBO);
   }
 
   private applyBlendMode(mode: SurfaceRenderConfig["blendMode"]) {
@@ -377,5 +414,12 @@ export class WebGLPipeline {
       this.gl.deleteTexture(tex);
     }
     this.textureCache.clear();
+
+    for (const buf of this.meshVBOCache.values()) {
+      this.gl.deleteBuffer(buf);
+    }
+    this.meshVBOCache.clear();
+
+    if (this.quadVBO) this.gl.deleteBuffer(this.quadVBO);
   }
 }
